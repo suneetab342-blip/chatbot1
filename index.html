@@ -1,54 +1,207 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Chatbot</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nova AI Chatbot</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b0b14;color:#f5f3ff;font-family:Arial,sans-serif}
+.app{display:flex;height:100vh}
+aside{width:250px;background:#11111d;padding:20px;border-right:1px solid #29263c}
+.logo{font-size:25px;font-weight:bold;color:#b69cff;margin-bottom:25px}
+button{cursor:pointer}
+.new{width:100%;padding:12px;border-radius:12px;border:1px solid #55417f;background:#211a34;color:white}
+main{flex:1;display:flex;flex-direction:column;min-width:0}
+header{padding:18px 24px;border-bottom:1px solid #29263c;font-weight:bold}
+#chat{flex:1;overflow:auto;padding:25px 15px}
+.welcome{max-width:650px;margin:9vh auto;text-align:center}
+.symbol{font-size:40px;color:#b69cff}
+h1{font-size:36px}
+.sub{color:#aaa5c0;line-height:1.7}
+.suggestions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:25px}
+.suggestion{padding:16px;background:#171725;border:1px solid #302b45;border-radius:12px;color:white;text-align:left}
+.suggestion:hover{border-color:#a78bfa}
+.messages{max-width:780px;margin:auto}
+.msg{padding:16px 0;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.user{color:#d7c7ff}
+.bot{color:#f3f0ff}
+.composer-wrap{padding:12px 15px 18px}
+form{max-width:780px;margin:auto;background:#171725;border:1px solid #403754;border-radius:16px;padding:10px}
+textarea{width:100%;resize:none;max-height:150px;min-height:45px;background:transparent;border:0;outline:none;color:white;padding:10px;font-size:16px}
+.bottom{display:flex;justify-content:space-between;align-items:center;color:#9993ad;font-size:12px}
+.send{background:#8b5cf6;color:white;border:0;border-radius:10px;padding:12px 18px;font-size:18px}
+.send:disabled{opacity:.5}
+.note{text-align:center;color:#817b95;font-size:11px;margin-top:10px}
+#error{color:#fca5a5;max-width:780px;margin:8px auto;font-size:13px}
+.hidden{display:none}
+@media(max-width:650px){
+ aside{display:none}
+ .welcome{margin:5vh auto}
+ h1{font-size:29px}
+ .suggestions{grid-template-columns:1fr}
+ header{padding:16px}
+}
+</style>
 </head>
 <body>
+<div class="app">
+<aside>
+  <div class="logo">✦ Nova AI</div>
+  <button class="new" id="newChat">＋ नई चैट</button>
+  <p style="color:#aaa5c0;line-height:1.7">
+    पढ़ाई, कोडिंग और नए विचारों के लिए तुम्हारा AI साथी।
+  </p>
+  <p style="color:#817b95;font-size:12px;margin-top:40px">
+    Powered by Groq
+  </p>
+</aside>
 
-  <div class="chat-container">
-    <header class="chat-header">
-      <div class="bot-avatar">🤖</div>
-      <div class="header-info">
-        <h2>My Chatbot</h2>
-        <p><span class="status-dot"></span> Online</p>
-      </div>
-      <button id="clear-btn" title="Clear chat">🗑️</button>
-    </header>
+<main>
+<header>✦ Nova AI <span style="float:right;color:#b69cff;font-size:13px">Groq Assistant</span></header>
 
-    <main id="chat-box" class="chat-box" aria-live="polite">
-      <div class="message bot-message">
-        Hello! 👋 Main tumhara chatbot hoon.
-        Mujhse kuch bhi poochho!
-      </div>
-    </main>
-
-    <div class="suggestions">
-      <button class="suggestion">Hello</button>
-      <button class="suggestion">What is your name?</button>
-      <button class="suggestion">Help</button>
-    </div>
-
-    <form id="chat-form" class="chat-input">
-      <input
-        type="text"
-        id="user-input"
-        placeholder="Type your message..."
-        autocomplete="off"
-        aria-label="Your message"
-        required
-      >
-      <button type="submit" id="send-btn" aria-label="Send message">
-        ➤
-      </button>
-    </form>
-
-    <footer>Powered by My Chatbot</footer>
+<section id="chat">
+<div class="welcome" id="welcome">
+  <div class="symbol">✦</div>
+  <h1>आज क्या सीखना है?</h1>
+  <p class="sub">अपना सवाल लिखो और AI से बातचीत शुरू करो।</p>
+  <div class="suggestions">
+    <button class="suggestion" data-prompt="मुझे Machine Learning आसान हिंदी में समझाओ।">📚 Machine Learning सीखो</button>
+    <button class="suggestion" data-prompt="मेरे लिए एक सुंदर वेबसाइट का HTML कोड लिखो।">💻 कोड लिखो</button>
+    <button class="suggestion" data-prompt="मुझे English सीखने में मदद करो।">🌱 English सीखो</button>
+    <button class="suggestion" data-prompt="मुझे एक मजेदार सामान्य ज्ञान तथ्य बताओ।">💡 कुछ नया जानो</button>
   </div>
+</div>
+<div class="messages" id="messages"></div>
+</section>
 
-  <script src="script.js"></script>
+<div class="composer-wrap">
+<form id="form">
+<textarea id="input" rows="1" placeholder="Nova AI से कुछ भी पूछो..." aria-label="संदेश"></textarea>
+<div class="bottom">
+<span>Enter = Send · Shift + Enter = नई लाइन</span>
+<button class="send" id="send" type="submit">↑</button>
+</div>
+</form>
+<div class="note">AI के जवाब गलत हो सकते हैं। जरूरी जानकारी जाँच लें।</div>
+<div id="error"></div>
+</div>
+</main>
+</div>
+
+<script>
+// Cloudflare Worker का URL यहाँ डालें.
+// उदाहरण: https://my-chatbot.username.workers.dev/chat
+const API_ENDPOINT = "https://YOUR-WORKER-NAME.YOUR-SUBDOMAIN.workers.dev/chat";
+
+const form = document.getElementById("form");
+const input = document.getElementById("input");
+const send = document.getElementById("send");
+const messagesEl = document.getElementById("messages");
+const welcome = document.getElementById("welcome");
+const errorEl = document.getElementById("error");
+
+let history = [];
+let busy = false;
+
+function addMessage(role, text) {
+  const el = document.createElement("div");
+  el.className = "msg " + (role === "user" ? "user" : "bot");
+  el.textContent = (role === "user" ? "🧑 तुम\n" : "✦ Nova AI\n") + text;
+  messagesEl.appendChild(el);
+  document.getElementById("chat").scrollTop =
+    document.getElementById("chat").scrollHeight;
+  return el;
+}
+
+async function sendMessage(text) {
+  text = text.trim();
+  if (!text || busy) return;
+
+  if (API_ENDPOINT.includes("YOUR-WORKER-NAME")) {
+    errorEl.textContent =
+      "पहले API_ENDPOINT में अपने Cloudflare Worker का URL डालें।";
+    return;
+  }
+
+  busy = true;
+  send.disabled = true;
+  errorEl.textContent = "";
+  welcome.classList.add("hidden");
+
+  addMessage("user", text);
+  history.push({role:"user", content:text});
+  input.value = "";
+
+  const loading = addMessage("assistant", "जवाब तैयार हो रहा है...");
+
+  try {
+    const response = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({messages:history})
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "API request असफल हुई।");
+    }
+
+    if (typeof data.reply !== "string" || !data.reply) {
+      throw new Error("AI का जवाब नहीं मिला।");
+    }
+
+    loading.textContent = "✦ Nova AI\n" + data.reply;
+    history.push({role:"assistant", content:data.reply});
+
+  } catch (err) {
+    loading.remove();
+    history.pop();
+    errorEl.textContent = "त्रुटि: " + err.message;
+  } finally {
+    busy = false;
+    send.disabled = false;
+    input.focus();
+    document.getElementById("chat").scrollTop =
+      document.getElementById("chat").scrollHeight;
+  }
+}
+
+form.addEventListener("submit", function(e) {
+  e.preventDefault();
+  sendMessage(input.value);
+});
+
+input.addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    form.requestSubmit();
+  }
+});
+
+input.addEventListener("input", function() {
+  this.style.height = "auto";
+  this.style.height = Math.min(this.scrollHeight, 150) + "px";
+});
+
+document.querySelectorAll("[data-prompt]").forEach(button => {
+  button.addEventListener("click", () => {
+    input.value = button.dataset.prompt;
+    sendMessage(input.value);
+  });
+});
+
+document.getElementById("newChat").addEventListener("click", () => {
+  if (busy) return;
+  history = [];
+  messagesEl.replaceChildren();
+  welcome.classList.remove("hidden");
+  errorEl.textContent = "";
+  input.value = "";
+  input.focus();
+});
+</script>
 </body>
 </html>
